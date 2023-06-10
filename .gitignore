@@ -1,0 +1,17 @@
+# Pycharm project files
+.idea/
+
+# Actual config file
+config.yml
+
+# Python virtual environment
+venv/
+
+# Python cache
+*__pycache__*
+
+# MyPy cache
+.mypy_cache/
+
+# Python's package metadata
+*.egg-info/

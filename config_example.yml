@@ -1,0 +1,13 @@
+# Can be one of the following: chrome, edge, safari, firefox
+driver_type: 'chrome'
+
+# Path to webdriver executable
+driver_executable: 'webdriver/chromedriver'
+
+# Arguments passed to webdriver instance on creation time
+driver_options:
+  - '--headless=new'
+  - '--window-size=1920,1080'
+
+# Path to sqlite database (you can use special value: ':memory:' to use temporary database in RAM)
+database_path: 'database/dell-st-lookup.db'
