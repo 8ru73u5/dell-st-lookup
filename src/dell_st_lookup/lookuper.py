@@ -61,7 +61,12 @@ class DellServiceTagLookuper:
         # Get device type
         device_type = self.driver.find_element(
             By.CSS_SELECTOR, 'meta[name=supportproductselected]'
-        ).get_attribute('content').split('-')[-1]
+        ).get_attribute('content')
+
+        if device_type is None:
+            raise NoSuchElementException('No content attribute in device-type-related meta tag')
+
+        device_type = device_type.split('-')[1]
 
         # Get device name
         device_name = self.driver.find_element(
@@ -75,6 +80,10 @@ class DellServiceTagLookuper:
 
         # Get warranty type
         warranty_type = self.driver.find_element(By.ID, 'WarrantyType').get_attribute('value')
+        if warranty_type is None:
+            raise NoSuchElementException(
+                'No value attribute in warranty-type-related input element'
+            )
 
         # Get warranty expiration date
         warranty_expiration_date_text = self.driver.find_element(
