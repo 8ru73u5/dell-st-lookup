@@ -3,15 +3,16 @@ from pathlib import Path
 from typing import Literal, Any
 
 import yaml
-from selenium import webdriver
+
+from dell_st_lookup import browser_profiles as bp
 
 DriverType = Literal['chrome', 'edge', 'safari', 'firefox']
 
-_driver_type_mappings = {
-    'chrome': webdriver.Chrome,
-    'edge': webdriver.Edge,
-    'safari': webdriver.Safari,
-    'firefox': webdriver.Firefox
+_driver_type_mappings: dict[DriverType, bp.BrowserProfile] = {
+    'chrome': bp.CHROME_PROFILE,
+    'edge': bp.EDGE_PROFILE,
+    'firefox': bp.FIREFOX_PROFILE,
+    'safari': bp.SAFARI_PROFILE
 }
 
 _required_config_keys = {'driver_type', 'driver_executable'}
@@ -23,6 +24,18 @@ class Config:
     driver_executable: Path
     driver_options: list[str] = field(default_factory=list)
     database_path: Path | Literal[':memory:'] = ':memory:'
+
+    @property
+    def driver_init_function(self) -> bp.WebDriverType:
+        return _driver_type_mappings[self.driver_type].init
+
+    @property
+    def driver_options_function(self) -> bp.OptionsType:
+        return _driver_type_mappings[self.driver_type].options
+
+    @property
+    def driver_service_function(self) -> bp.ServiceType:
+        return _driver_type_mappings[self.driver_type].service
 
     @staticmethod
     def parse_driver_type(driver_type: Any) -> DriverType:
@@ -86,7 +99,7 @@ class Config:
         try:
             with open(config_path) as f:
                 config_file = yaml.safe_load(f.read())
-        except (FileNotFoundError | IsADirectoryError):
+        except (FileNotFoundError, IsADirectoryError):
             raise ValueError(f'Config path is not a valid file: {config_path}')
 
         if not isinstance(config_file, dict):
