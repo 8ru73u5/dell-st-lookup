@@ -66,7 +66,7 @@ class DellServiceTagLookuper:
         if device_type is None:
             raise NoSuchElementException('No content attribute in device-type-related meta tag')
 
-        device_type = device_type.split('-')[1]
+        device_type = device_type.split('-')[-1]
 
         # Get device name
         device_name = self.driver.find_element(
