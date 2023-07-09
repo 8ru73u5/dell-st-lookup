@@ -48,7 +48,9 @@ class DellServiceTagLookuper:
 
         # Wait for warranty info or 404 page to load
         WebDriverWait(self.driver, timeout=30).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '#hiddenValues, #null-result-text'))
+            EC.presence_of_element_located((
+                By.CSS_SELECTOR, '#ps-inlineWarranty div, #null-result-text'
+            ))
         )
 
         # Check if it's 404 page
@@ -63,10 +65,10 @@ class DellServiceTagLookuper:
             By.CSS_SELECTOR, 'meta[name=supportproductselected]'
         ).get_attribute('content')
 
-        if device_type is None:
-            raise NoSuchElementException('No content attribute in device-type-related meta tag')
-
         device_type = device_type.split('-')[-1]
+
+        if device_type not in ('laptop', 'monitor', 'dock', 'desktop'):
+            device_type = 'other'
 
         # Get device name
         device_name = self.driver.find_element(
@@ -79,21 +81,23 @@ class DellServiceTagLookuper:
         ).text.strip().split()[-1]
 
         # Get warranty type
-        warranty_type = self.driver.find_element(By.ID, 'WarrantyType').get_attribute('value')
-        if warranty_type is None:
-            raise NoSuchElementException(
-                'No value attribute in warranty-type-related input element'
-            )
+        try:
+            warranty_type = self.driver.find_element(By.ID, 'WarrantyType').get_attribute('value')
+        except NoSuchElementException:
+            warranty_type = None
 
         # Get warranty expiration date
-        warranty_expiration_date_text = self.driver.find_element(
-            By.CSS_SELECTOR, 'p.warrantyExpiringLabel'
-        ).text.strip().split()[-3:]
+        if warranty_type is not None:
+            warranty_expiration_date_text = self.driver.find_element(
+                By.CSS_SELECTOR, 'p.warrantyExpiringLabel'
+            ).text.strip().split()[-3:]
 
-        warranty_expiration_date = datetime.strptime(
-            ' '.join(warranty_expiration_date_text),
-            '%d %b %Y'
-        )
+            warranty_expiration_date = datetime.strptime(
+                ' '.join(warranty_expiration_date_text),
+                '%d %b %Y'
+            )
+        else:
+            warranty_expiration_date = None
 
         return DellDevice(
             device_type=device_type,
